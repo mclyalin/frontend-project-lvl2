@@ -1,0 +1,42 @@
+{
+  "name": "@mclyalin/gendiff",
+  "version": "1.0.0",
+  "description": "Hexlet training project lvl2 -Gendiff-",
+  "main": "index.js",
+  "bin": {
+    "gendiff": "bin/gendiff.js"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "test": "npx -n --experimental-vm-modules jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mclyalin/frontend-project-lvl2.git"
+  },
+  "author": "Michael Lyalin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mclyalin/frontend-project-lvl2/issues"
+  },
+  "type": "module",
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  },
+  "homepage": "https://github.com/mclyalin/frontend-project-lvl2#readme",
+  "devDependencies": {
+    "eslint": "^7.0.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.13.1",
+    "jest": "^26.0.1"
+  },
+  "dependencies": {
+    "@jest/globals": "^26.0.1",
+    "commander": "^5.1.0",
+    "lodash": "^4.17.15"
+  }
+}
