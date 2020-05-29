@@ -13,7 +13,7 @@ watch:
 	npm test -- --watch
 
 test-coverage:
-	npm test -- --coverage
+	npm test -- --coverage --coverageProvider=v8
 
 lint:
 	npx eslint .
