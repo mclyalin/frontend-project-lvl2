@@ -4,12 +4,23 @@ import path, { dirname } from 'path';
 import gendiff from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.join(dirname(__filename), '..', 'fixtures');
+const __dirname = dirname(__filename);
 
-test('gendiff', () => {
-  const filepath1 = path.join(__dirname, 'before.json');
-  const filepath2 = path.join(__dirname, 'after.json');
-  const changesPath = path.join(__dirname, 'changes-json.txt');
-  const expected = fs.readFileSync(changesPath, 'utf8').trim();
-  expect(gendiff(filepath1, filepath2)).toBe(expected);
+const getPathTo = (name, extension) => (
+  path.join(__dirname, '..', 'fixtures', `${name}.${extension}`)
+);
+
+const expected = fs.readFileSync(getPathTo('changes', 'txt'), 'utf8').trim();
+
+describe('gendiff without options', () => {
+  it('with json format', () => {
+    const filepath1 = getPathTo('before', 'json');
+    const filepath2 = getPathTo('after', 'json');
+    expect(gendiff(filepath1, filepath2)).toBe(expected);
+  });
+  it('with yaml format', () => {
+    const filepath1 = getPathTo('before', 'yml');
+    const filepath2 = getPathTo('after', 'yml');
+    expect(gendiff(filepath1, filepath2)).toBe(expected);
+  })
 });
