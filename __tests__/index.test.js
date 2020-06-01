@@ -13,14 +13,19 @@ const getPathTo = (name, extension) => (
 const expected = fs.readFileSync(getPathTo('changes', 'txt'), 'utf8').trim();
 
 describe('gendiff without options', () => {
-  it('with json format', () => {
+  test('with json format', () => {
     const filepath1 = getPathTo('before', 'json');
     const filepath2 = getPathTo('after', 'json');
     expect(gendiff(filepath1, filepath2)).toBe(expected);
   });
-  it('with yaml format', () => {
+  test('with yaml format', () => {
     const filepath1 = getPathTo('before', 'yml');
     const filepath2 = getPathTo('after', 'yml');
+    expect(gendiff(filepath1, filepath2)).toBe(expected);
+  });
+  test('with ini format', () => {
+    const filepath1 = getPathTo('before', 'ini');
+    const filepath2 = getPathTo('after', 'ini');
     expect(gendiff(filepath1, filepath2)).toBe(expected);
   })
 });
