@@ -1,31 +1,28 @@
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
+import { describe, test, expect } from '@jest/globals';
+import { formatters } from '../src/formatters.js';
+import { parsers } from '../src/parsers.js';
 import gendiff from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const getPathTo = (name, extension) => (
-  path.join(__dirname, '..', 'fixtures', `${name}.${extension}`)
+const getPathTo = (filename, extension) => (
+  path.join(__dirname, '..', '__fixtures__', `${filename}.${extension}`)
 );
 
-const expected = fs.readFileSync(getPathTo('changes', 'txt'), 'utf8').trim();
+const extensions = Object.keys(parsers);
+const outputFormats = Object.keys(formatters);
 
-describe('gendiff without options', () => {
-  test('with json format', () => {
-    const filepath1 = getPathTo('before', 'json');
-    const filepath2 = getPathTo('after', 'json');
-    expect(gendiff(filepath1, filepath2)).toBe(expected);
+describe.each(outputFormats)('gendiff --format [%s]', (outputFormat) => {
+  const expectedPath = getPathTo(`changes-${outputFormat}`, 'txt');
+  const expected = fs.readFileSync(expectedPath, 'utf-8').trim();
+
+  test.each(extensions)('with .%s files', (extension) => {
+    const filepath1 = getPathTo('before', extension);
+    const filepath2 = getPathTo('after', extension);
+    expect(gendiff(filepath1, filepath2, outputFormat)).toBe(expected);
   });
-  test('with yaml format', () => {
-    const filepath1 = getPathTo('before', 'yml');
-    const filepath2 = getPathTo('after', 'yml');
-    expect(gendiff(filepath1, filepath2)).toBe(expected);
-  });
-  test('with ini format', () => {
-    const filepath1 = getPathTo('before', 'ini');
-    const filepath2 = getPathTo('after', 'ini');
-    expect(gendiff(filepath1, filepath2)).toBe(expected);
-  })
 });
