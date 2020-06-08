@@ -2,8 +2,6 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 import { describe, test, expect } from '@jest/globals';
-import { formatters } from '../src/formatters.js';
-import { parsers } from '../src/parsers.js';
 import gendiff from '../index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,8 +11,8 @@ const getPathTo = (filename, extension) => (
   path.join(__dirname, '..', '__fixtures__', `${filename}.${extension}`)
 );
 
-const extensions = Object.keys(parsers);
-const outputFormats = Object.keys(formatters);
+const extensions = ['json', 'yml', 'ini'];
+const outputFormats = ['stylish'];
 
 describe.each(outputFormats)('gendiff --format [%s]', (outputFormat) => {
   const expectedPath = getPathTo(`changes-${outputFormat}`, 'txt');
