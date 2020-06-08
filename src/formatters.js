@@ -1,26 +1,21 @@
-const makeStylish = (data) => {
-  const numOfSpaces = 4;
-  const iter = (arr, acc, depth = 1) => {
-    const [sign, key, value] = arr;
-    const indentSize = numOfSpaces * depth;
-    const indent = ' '.repeat(indentSize);
-    const prefix = `${sign} `.padStart(indentSize);
-    const firstPart = `${prefix}${key}: `;
-
-    if (Array.isArray(value)) {
-      return `${acc}${firstPart}{\n${value
-        .reduce((iAcc, v) => iter(v, iAcc, depth + 1), '')}${indent}}\n`;
-    }
-    return `${acc}${firstPart}${value}\n`;
-  };
-  const result = data.reduce((acc, d) => iter(d, acc), '');
-  return `{\n${result}}`;
+const makeStylish = (data, shiftSize = 0) => {
+  const shift = ' '.repeat(shiftSize);
+  const result = data
+    .map((item) => {
+      const { sign, key, value } = item;
+      const newShiftSize = shiftSize + 4;
+      const prefix = sign.concat(' ').padStart(newShiftSize);
+      if (Array.isArray(value)) {
+        return prefix.concat(key, ': ', makeStylish(value, newShiftSize));
+      }
+      return prefix.concat(key, ': ', value);
+    })
+    .join('\n');
+  return '{'.concat('\n', result, '\n', shift, '}');
 };
 
 const formatters = {
   stylish: makeStylish,
 };
 
-const format = (data, formatter) => formatters[formatter](data);
-
-export { format as default, formatters };
+export default (data, outputFormat) => formatters[outputFormat](data);

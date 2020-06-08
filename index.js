@@ -8,15 +8,15 @@ const getFileData = (filepath) => (
   fs.readFileSync(path.resolve(filepath), 'utf-8')
 );
 
-const getFileFormat = (filepath) => (
+const getFileExtension = (filepath) => (
   path.extname(filepath).slice(1)
 );
 
 const getChanges = (original, modified) => {
   const keys = _.union(Object.keys(original), Object.keys(modified));
-  return keys.map((key) => {
+  return keys.flatMap((key) => {
     if (_.isObject(original[key]) && _.isObject(modified[key])) {
-      return [[' ', key, getChanges(original[key], modified[key])]];
+      return { sign: ' ', key, value: getChanges(original[key], modified[key]) };
     }
     const originalValue = _.isObject(original[key])
       ? getChanges(original[key], original[key])
@@ -27,26 +27,30 @@ const getChanges = (original, modified) => {
       : modified[key];
 
     if (_.has(original, key) && !_.has(modified, key)) {
-      return [['-', key, originalValue]];
+      return { sign: '-', key, value: originalValue };
     }
     if (!_.has(original, key) && _.has(modified, key)) {
-      return [['+', key, modifiedValue]];
+      return { sign: '+', key, value: modifiedValue };
     }
     if (originalValue !== modifiedValue) {
-      return [['-', key, originalValue], ['+', key, modifiedValue]];
+      return [
+        { sign: '-', key, value: originalValue },
+        { sign: '+', key, value: modifiedValue },
+      ];
     }
-    return [[' ', key, originalValue]];
-  }).flat();
+    return { sign: ' ', key, value: originalValue };
+  });
 };
+
 
 export default (filepath1, filepath2, outputFormat) => {
   const data1 = getFileData(filepath1);
-  const inputFormat1 = getFileFormat(filepath1);
-  const original = parse(data1, inputFormat1);
+  const extension1 = getFileExtension(filepath1);
+  const original = parse(data1, extension1);
 
   const data2 = getFileData(filepath2);
-  const inputFormat2 = getFileFormat(filepath2);
-  const modified = parse(data2, inputFormat2);
+  const extension2 = getFileExtension(filepath2);
+  const modified = parse(data2, extension2);
 
   const changes = getChanges(original, modified);
   return format(changes, outputFormat);
