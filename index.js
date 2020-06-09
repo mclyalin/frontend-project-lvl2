@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import parse from './src/parsers.js';
-import format from './src/formatters.js';
+import format from './src/formatters/index.js';
 
 const getFileData = (filepath) => (
   fs.readFileSync(path.resolve(filepath), 'utf-8')
@@ -14,9 +14,13 @@ const getFileExtension = (filepath) => (
 
 const getChanges = (original, modified) => {
   const keys = _.union(Object.keys(original), Object.keys(modified));
-  return keys.flatMap((key) => {
+  return keys.map((key) => {
     if (_.isObject(original[key]) && _.isObject(modified[key])) {
-      return { sign: ' ', key, value: getChanges(original[key], modified[key]) };
+      return {
+        type: 'unchanged',
+        key,
+        value: getChanges(original[key], modified[key]),
+      };
     }
     const originalValue = _.isObject(original[key])
       ? getChanges(original[key], original[key])
@@ -27,18 +31,32 @@ const getChanges = (original, modified) => {
       : modified[key];
 
     if (_.has(original, key) && !_.has(modified, key)) {
-      return { sign: '-', key, value: originalValue };
+      return {
+        type: 'deleted',
+        key,
+        value: originalValue,
+      };
     }
     if (!_.has(original, key) && _.has(modified, key)) {
-      return { sign: '+', key, value: modifiedValue };
+      return {
+        type: 'added',
+        key,
+        value: modifiedValue,
+      };
     }
     if (originalValue !== modifiedValue) {
-      return [
-        { sign: '-', key, value: originalValue },
-        { sign: '+', key, value: modifiedValue },
-      ];
+      return {
+        type: 'changed',
+        key,
+        value: modifiedValue,
+        oldValue: originalValue,
+      };
     }
-    return { sign: ' ', key, value: originalValue };
+    return {
+      type: 'unchanged',
+      key,
+      value: originalValue,
+    };
   });
 };
 

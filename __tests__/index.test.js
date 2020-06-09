@@ -12,9 +12,9 @@ const getPathTo = (filename, extension) => (
 );
 
 const extensions = ['json', 'yml', 'ini'];
-const outputFormats = ['stylish'];
+const outputFormats = ['stylish', 'plain'];
 
-describe.each(outputFormats)('gendiff --format [%s]', (outputFormat) => {
+describe.each(outputFormats)('gendiff --format %s', (outputFormat) => {
   const expectedPath = getPathTo(`changes-${outputFormat}`, 'txt');
   const expected = fs.readFileSync(expectedPath, 'utf-8').trim();
 
