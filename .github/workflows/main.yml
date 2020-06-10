@@ -36,9 +36,9 @@ jobs:
         # Add environment variables
         env:
           CI: true
-      # - name: Run linter
+      - name: Run linter
         # Run Linter
-        # run: |
+        run: |
           # make lint
       - name: Test & publish code coverage
         # Publish code coverage on Code Climate
