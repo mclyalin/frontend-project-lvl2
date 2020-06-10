@@ -12,7 +12,7 @@ const getPathTo = (filename, extension) => (
 );
 
 const extensions = ['json', 'yml', 'ini'];
-const outputFormats = ['stylish', 'plain'];
+const outputFormats = ['stylish', 'plain', 'json'];
 
 describe.each(outputFormats)('gendiff --format %s', (outputFormat) => {
   const expectedPath = getPathTo(`changes-${outputFormat}`, 'txt');
