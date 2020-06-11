@@ -15,34 +15,17 @@ const getFileExtension = (filepath) => (
 const getChanges = (original, modified) => {
   const keys = _.union(Object.keys(original), Object.keys(modified));
   return keys.map((key) => {
-    if (_.isObject(original[key]) && _.isObject(modified[key])) {
-      return {
-        type: 'unchanged',
-        key,
-        value: getChanges(original[key], modified[key]),
-      };
+    const originalValue = original[key];
+    const modifiedValue = modified[key];
+    if (_.isPlainObject(originalValue) && _.isPlainObject(modifiedValue)) {
+      const children = getChanges(originalValue, modifiedValue);
+      return { type: 'node', key, children };
     }
-    const originalValue = _.isObject(original[key])
-      ? getChanges(original[key], original[key])
-      : original[key];
-
-    const modifiedValue = _.isObject(modified[key])
-      ? getChanges(modified[key], modified[key])
-      : modified[key];
-
-    if (_.has(original, key) && !_.has(modified, key)) {
-      return {
-        type: 'deleted',
-        key,
-        value: originalValue,
-      };
+    if (!_.has(original, key)) {
+      return { type: 'added', key, value: modifiedValue };
     }
-    if (!_.has(original, key) && _.has(modified, key)) {
-      return {
-        type: 'added',
-        key,
-        value: modifiedValue,
-      };
+    if (!_.has(modified, key)) {
+      return { type: 'deleted', key, value: originalValue };
     }
     if (originalValue !== modifiedValue) {
       return {
@@ -52,11 +35,7 @@ const getChanges = (original, modified) => {
         oldValue: originalValue,
       };
     }
-    return {
-      type: 'unchanged',
-      key,
-      value: originalValue,
-    };
+    return { type: 'unchanged', key, value: originalValue };
   });
 };
 

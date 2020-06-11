@@ -1,8 +1,10 @@
-const check = (value) => {
-  if (Array.isArray(value)) {
+import _ from 'lodash';
+
+const stingify = (value) => {
+  if (_.isObject(value)) {
     return '[complex value]';
   }
-  if (typeof value === 'string') {
+  if (_.isString(value)) {
     return `'${value}'`;
   }
   return value;
@@ -10,23 +12,31 @@ const check = (value) => {
 
 const printObject = (arr, parents = []) => arr
   .map((item) => {
-    const { type, key, value } = item;
+    const { type, key } = item;
     const updatedParents = [...parents, key];
-    if (type === 'unchanged') {
-      return Array.isArray(value)
-        ? printObject(value, updatedParents)
-        : null;
+    if (type === 'node') {
+      const { children } = item;
+      return printObject(children, updatedParents);
     }
     const pathToKey = updatedParents.join('.');
-    const firstPart = `Property ${pathToKey} was ${type}`;
+    const firstPart = ['Property ', pathToKey, ' was ', type].join('');
+    if (type === 'deleted') {
+      return firstPart;
+    }
     if (type === 'added') {
-      return firstPart.concat(' with ', check(value));
+      const { value } = item;
+      const lastPart = [' with ', stingify(value)].join('');
+      return [firstPart, lastPart].join('');
     }
     if (type === 'changed') {
-      const { oldValue } = item;
-      return firstPart.concat(' from ', check(oldValue), ' to ', check(value));
+      const { value, oldValue } = item;
+      const lastPart = [
+        ' from ', stingify(oldValue),
+        ' to ', stingify(value),
+      ].join('');
+      return [firstPart, lastPart].join('');
     }
-    return firstPart;
+    return null;
   })
   .filter((v) => v)
   .join('\n');
