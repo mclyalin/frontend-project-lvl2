@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const stingify = (value) => {
+const format = (value) => {
   if (_.isObject(value)) {
     return '[complex value]';
   }
@@ -10,35 +10,30 @@ const stingify = (value) => {
   return value;
 };
 
-const printObject = (arr, parents = []) => arr
+const makePlain = (tree, parents = []) => tree
   .map((item) => {
-    const { type, key } = item;
+    const {
+      type, key, valueBefore, valueAfter, children,
+    } = item;
     const updatedParents = [...parents, key];
-    if (type === 'node') {
-      const { children } = item;
-      return printObject(children, updatedParents);
-    }
     const pathToKey = updatedParents.join('.');
     const firstPart = ['Property ', pathToKey, ' was ', type].join('');
-    if (type === 'deleted') {
-      return firstPart;
+    switch (type) {
+      case 'node':
+        return makePlain(children, updatedParents);
+      case 'deleted':
+        return firstPart;
+      case 'added':
+        return [firstPart, ' with ', format(valueAfter)].join('');
+      case 'changed':
+        return [
+          firstPart, ' from ', format(valueBefore), ' to ', format(valueAfter),
+        ].join('');
+      default:
+        return null;
     }
-    if (type === 'added') {
-      const { value } = item;
-      const lastPart = [' with ', stingify(value)].join('');
-      return [firstPart, lastPart].join('');
-    }
-    if (type === 'changed') {
-      const { value, oldValue } = item;
-      const lastPart = [
-        ' from ', stingify(oldValue),
-        ' to ', stingify(value),
-      ].join('');
-      return [firstPart, lastPart].join('');
-    }
-    return null;
   })
   .filter((v) => v)
   .join('\n');
 
-export default printObject;
+export default makePlain;

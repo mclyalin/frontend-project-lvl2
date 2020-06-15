@@ -7,4 +7,4 @@ const formatters = {
   json: JSON.stringify,
 };
 
-export default (data, outputFormat) => formatters[outputFormat](data);
+export default (tree, outputFormat) => formatters[outputFormat](tree);

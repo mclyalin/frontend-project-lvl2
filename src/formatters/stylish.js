@@ -1,63 +1,54 @@
 import _ from 'lodash';
 
-const getSign = (type) => {
-  const signs = {
-    added: '+',
-    deleted: '-',
-    unchanged: ' ',
-  };
-  return signs[type];
-};
+const calcIndent = (depth, initIndent = 4) => depth * initIndent;
 
-const formatObject = (obj) => (
-  Object.entries(obj).map(([key, value]) => {
-    const type = 'unchanged';
-    return { type, key, value };
-  })
-);
-
-const printProperty = (type, key, value, indentSize) => {
-  const sign = getSign(type);
-  const prefix = [sign, ' '].join('').padStart(indentSize);
-  return [prefix, key, ': ', value].join('');
-};
-
-const printObject = (arr, shiftSize = 0) => {
-  const stringify = (value, indentSize) => {
-    if (_.isPlainObject(value)) {
-      const formattedValue = formatObject(value);
-      return printObject(formattedValue, indentSize);
-    }
-    if (Array.isArray(value)) {
-      return printObject(value, indentSize);
-    }
-    return value;
-  };
-
-  const shift = ' '.repeat(shiftSize);
-  const result = arr
-    .map((item) => {
-      const newShiftSize = shiftSize + 4;
-      const { type, key } = item;
-      if (type === 'node') {
-        const { children } = item;
-        const childrenStr = stringify(children, newShiftSize);
-        return printProperty('unchanged', key, childrenStr, newShiftSize);
-      }
-      if (type === 'changed') {
-        const { value, oldValue } = item;
-        const valueStr = stringify(value, newShiftSize);
-        const oldValueStr = stringify(oldValue, newShiftSize);
-        const firstStr = printProperty('deleted', key, oldValueStr, newShiftSize);
-        const lastStr = printProperty('added', key, valueStr, newShiftSize);
-        return [firstStr, lastStr].join('\n');
-      }
-      const { value } = item;
-      const valueStr = stringify(value, newShiftSize);
-      return printProperty(type, key, valueStr, newShiftSize);
+const format = (obj, depth) => {
+  const indentSize = calcIndent(depth + 1);
+  const result = Object.entries(obj)
+    .map(([key, value]) => {
+      const prefix = '  '.padStart(indentSize);
+      return [prefix, key, ': ', value].join('');
     })
     .join('\n');
+  const shift = ' '.repeat(calcIndent(depth));
   return ['{', '\n', result, '\n', shift, '}'].join('');
 };
 
-export default printObject;
+const buildString = (sign, key, value, depth) => {
+  const indentSize = calcIndent(depth);
+  const prefix = [sign, ' '].join('').padStart(indentSize);
+  const formattedValue = _.isPlainObject(value)
+    ? format(value, depth)
+    : value;
+  return [prefix, key, ': ', formattedValue].join('');
+};
+
+const makeStylish = (tree, depthCount = 0) => {
+  const depth = depthCount + 1;
+  const result = tree
+    .map((item) => {
+      const {
+        type, key, valueBefore, valueAfter, children,
+      } = item;
+      switch (type) {
+        case 'node':
+          return buildString(' ', key, makeStylish(children, depth), depth);
+        case 'deleted':
+          return buildString('-', key, valueBefore, depth);
+        case 'added':
+          return buildString('+', key, valueAfter, depth);
+        case 'changed':
+          return [
+            buildString('-', key, valueBefore, depth),
+            buildString('+', key, valueAfter, depth),
+          ].join('\n');
+        default:
+          return buildString(' ', key, valueBefore, depth);
+      }
+    })
+    .join('\n');
+  const shift = ' '.repeat(calcIndent(depth - 1));
+  return ['{', '\n', result, '\n', shift, '}'].join('');
+};
+
+export default makeStylish;
