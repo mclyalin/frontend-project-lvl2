@@ -23,31 +23,35 @@ const buildString = (sign, key, value, depth) => {
   return [prefix, key, ': ', formattedValue].join('');
 };
 
-const makeStylish = (tree, depthCount = 0) => {
-  const depth = depthCount + 1;
+const makeStylish = (tree, depth = 0) => {
   const result = tree
     .map((item) => {
       const {
         type, key, valueBefore, valueAfter, children,
       } = item;
+      const newDepth = depth + 1;
       switch (type) {
         case 'node':
-          return buildString(' ', key, makeStylish(children, depth), depth);
+          return buildString(
+            ' ', key, makeStylish(children, newDepth), newDepth,
+          );
         case 'deleted':
-          return buildString('-', key, valueBefore, depth);
+          return buildString('-', key, valueBefore, newDepth);
         case 'added':
-          return buildString('+', key, valueAfter, depth);
+          return buildString('+', key, valueAfter, newDepth);
         case 'changed':
           return [
-            buildString('-', key, valueBefore, depth),
-            buildString('+', key, valueAfter, depth),
+            buildString('-', key, valueBefore, newDepth),
+            buildString('+', key, valueAfter, newDepth),
           ].join('\n');
+        case 'unchanged':
+          return buildString(' ', key, valueBefore, newDepth);
         default:
-          return buildString(' ', key, valueBefore, depth);
+          throw new Error(`Unknown type: '${type}'!`);
       }
     })
     .join('\n');
-  const shift = ' '.repeat(calcIndent(depth - 1));
+  const shift = ' '.repeat(calcIndent(depth));
   return ['{', '\n', result, '\n', shift, '}'].join('');
 };
 

@@ -17,20 +17,27 @@ const makePlain = (tree, parents = []) => tree
     } = item;
     const updatedParents = [...parents, key];
     const pathToKey = updatedParents.join('.');
-    const firstPart = ['Property ', pathToKey, ' was ', type].join('');
     switch (type) {
       case 'node':
         return makePlain(children, updatedParents);
       case 'deleted':
-        return firstPart;
+        return [
+          'Property ', pathToKey, ' was ', type,
+        ].join('');
       case 'added':
-        return [firstPart, ' with ', format(valueAfter)].join('');
+        return [
+          'Property ', pathToKey, ' was ', type,
+          ' with ', format(valueAfter),
+        ].join('');
       case 'changed':
         return [
-          firstPart, ' from ', format(valueBefore), ' to ', format(valueAfter),
+          'Property ', pathToKey, ' was ', type,
+          ' from ', format(valueBefore), ' to ', format(valueAfter),
         ].join('');
-      default:
+      case 'unchanged':
         return null;
+      default:
+        throw new Error(`Unknown type: '${type}'!`);
     }
   })
   .filter((v) => v)
