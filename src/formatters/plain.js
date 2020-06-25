@@ -10,37 +10,32 @@ const format = (value) => {
   return value;
 };
 
-const makePlain = (tree, parents = []) => tree
-  .map((item) => {
-    const {
-      type, key, valueBefore, valueAfter, children,
-    } = item;
-    const updatedParents = [...parents, key];
-    const pathToKey = updatedParents.join('.');
-    switch (type) {
-      case 'node':
-        return makePlain(children, updatedParents);
-      case 'deleted':
-        return [
-          'Property ', pathToKey, ' was ', type,
-        ].join('');
-      case 'added':
-        return [
-          'Property ', pathToKey, ' was ', type,
-          ' with ', format(valueAfter),
-        ].join('');
-      case 'changed':
-        return [
-          'Property ', pathToKey, ' was ', type,
-          ' from ', format(valueBefore), ' to ', format(valueAfter),
-        ].join('');
-      case 'unchanged':
-        return null;
-      default:
-        throw new Error(`Unknown type: '${type}'!`);
-    }
-  })
-  .filter((v) => v)
-  .join('\n');
+const makePlain = (tree) => {
+  const iter = (data, keys) => data
+    .map((item) => {
+      const {
+        type, key, valueBefore, valueAfter, children,
+      } = item;
+      const updatedKeys = [...keys, key];
+      const pathToKey = updatedKeys.join('.');
+      switch (type) {
+        case 'node':
+          return iter(children, updatedKeys);
+        case 'deleted':
+          return `Property ${pathToKey} was ${type}`;
+        case 'added':
+          return `Property ${pathToKey} was ${type} with ${format(valueAfter)}`;
+        case 'changed':
+          return `Property ${pathToKey} was ${type} from ${format(valueBefore)} to ${format(valueAfter)}`;
+        case 'unchanged':
+          return null;
+        default:
+          throw new Error(`Unknown type: '${type}'!`);
+      }
+    })
+    .filter(_.identity)
+    .join('\n');
+  return iter(tree, []);
+};
 
 export default makePlain;
