@@ -8,14 +8,14 @@ const calcIndent = (depth) => {
 const buildString = (sign, key, value, depth) => {
   const indentSize = calcIndent(depth);
   const prefix = `${sign} `.padStart(indentSize);
-  if (_.isPlainObject(value)) {
-    const formattedValue = Object.entries(value)
-      .map(([iKey, iValue]) => buildString(' ', iKey, iValue, depth + 1))
-      .join('\n');
-    const shift = ' '.repeat(indentSize);
-    return `${prefix}${key}: {\n${formattedValue}\n${shift}}`;
+  if (!_.isPlainObject(value)) {
+    return `${prefix}${key}: ${value}`;
   }
-  return `${prefix}${key}: ${value}`;
+  const formattedValue = Object.entries(value)
+    .map(([iKey, iValue]) => buildString(' ', iKey, iValue, depth + 1))
+    .join('\n');
+  const shift = ' '.repeat(indentSize);
+  return `${prefix}${key}: {\n${formattedValue}\n${shift}}`;
 };
 
 const makeStylish = (tree) => {
